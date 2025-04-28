@@ -1,0 +1,263 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belajar Matematika SD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(to right, #a1c4fd, #c2e9fb);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin: 10px 0;
+            color: #555;
+        }
+        #levelSelector, #quiz, #result {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            width: 90%;
+            max-width: 420px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4f8ef7;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            margin: 10px;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #3c6ed9;
+            transform: scale(1.05);
+        }
+        input {
+            width: 85%;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        #timerBar {
+            height: 8px;
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        #timerFill {
+            height: 100%;
+            width: 100%;
+            background-color: #f44336;
+            transition: width 1s linear;
+        }
+        #feedback {
+            font-size: 1.2em;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .hidden {
+            display: none;
+        }
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            font-size: 0.9em;
+            color: #555;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Belajar Matematika SD</h1>
+
+<div id="levelSelector">
+    <h2>Pilih Level</h2>
+    <button onclick="startLevel('easy')">Mudah</button>
+    <button onclick="startLevel('normal')">Sedang</button>
+    <button onclick="startLevel('hard')">Sulit</button>
+</div>
+
+<div id="quiz" class="hidden">
+    <h2 id="levelTitle"></h2>
+    <div id="timerBar"><div id="timerFill"></div></div>
+    <div id="question" style="margin-top: 20px; font-size: 24px;"></div>
+    <input type="text" id="answer" placeholder="Jawaban">
+    <br><br>
+    <button onclick="submitAnswer()">Lanjut</button>
+    <div id="feedback"></div>
+</div>
+
+<div id="result" class="hidden">
+    <h2>Skor Akhir</h2>
+    <p style="font-size: 24px;"><span id="score"></span> / 15</p>
+    <p id="message" style="font-size: 1.2em; margin-top: 10px;"></p>
+    <button onclick="location.reload()">Main Lagi</button>
+</div>
+
+<footer>
+    Dibuat oleh: Muhammad Nanda Asy'ari <br>
+    Tanggal: Senin, 28 April 2025
+</footer>
+
+<audio id="correctSound" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3"></audio>
+<audio id="wrongSound" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-buzz-950.mp3"></audio>
+
+<script>
+const questions = {
+    easy: [
+        { q: "2 + 2 =", a: "4" },
+        { q: "5 - 3 =", a: "2" },
+        { q: "1 + 6 =", a: "7" },
+        { q: "3 + 5 =", a: "8" },
+        { q: "4 - 1 =", a: "3" },
+        { q: "7 + 2 =", a: "9" },
+        { q: "6 - 4 =", a: "2" },
+        { q: "1 + 1 =", a: "2" },
+        { q: "0 + 5 =", a: "5" },
+        { q: "8 - 5 =", a: "3" },
+        { q: "3 + 4 =", a: "7" },
+        { q: "6 + 1 =", a: "7" },
+        { q: "9 - 7 =", a: "2" },
+        { q: "5 + 3 =", a: "8" },
+        { q: "7 - 2 =", a: "5" }
+    ],
+    normal: [
+        { q: "12 x 2 =", a: "24" },
+        { q: "30 ÷ 5 =", a: "6" },
+        { q: "18 - 9 =", a: "9" },
+        { q: "15 + 17 =", a: "32" },
+        { q: "25 ÷ 5 =", a: "5" },
+        { q: "9 x 4 =", a: "36" },
+        { q: "50 - 18 =", a: "32" },
+        { q: "14 + 23 =", a: "37" },
+        { q: "45 ÷ 9 =", a: "5" },
+        { q: "8 x 7 =", a: "56" },
+        { q: "20 + 22 =", a: "42" },
+        { q: "60 ÷ 6 =", a: "10" },
+        { q: "13 + 11 =", a: "24" },
+        { q: "40 - 15 =", a: "25" },
+        { q: "5 x 8 =", a: "40" }
+    ],
+    hard: [
+        { q: "125 ÷ 5 =", a: "25" },
+        { q: "99 - 37 =", a: "62" },
+        { q: "12 x 11 =", a: "132" },
+        { q: "144 ÷ 12 =", a: "12" },
+        { q: "75 - 48 =", a: "27" },
+        { q: "23 x 3 =", a: "69" },
+        { q: "88 ÷ 8 =", a: "11" },
+        { q: "120 ÷ 10 =", a: "12" },
+        { q: "45 x 2 =", a: "90" },
+        { q: "110 - 25 =", a: "85" },
+        { q: "15 x 6 =", a: "90" },
+        { q: "81 ÷ 9 =", a: "9" },
+        { q: "99 ÷ 3 =", a: "33" },
+        { q: "66 ÷ 6 =", a: "11" },
+        { q: "77 - 44 =", a: "33" }
+    ]
+};
+let currentLevel = "";
+let currentQuestionIndex = 0;
+let currentScore = 0;
+let timeLeft = 30;
+let timerInterval;
+
+function startLevel(level) {
+    currentLevel = level;
+    document.getElementById('levelSelector').classList.add('hidden');
+    document.getElementById('quiz').classList.remove('hidden');
+    document.getElementById('levelTitle').innerText = "Level: " + level.toUpperCase();
+    loadQuestion();
+}
+
+function loadQuestion() {
+    if (currentQuestionIndex < 15) {
+        document.getElementById('question').innerText = questions[currentLevel][currentQuestionIndex].q;
+        document.getElementById('answer').value = "";
+        document.getElementById('feedback').innerText = "";
+        resetTimer();
+    } else {
+        clearInterval(timerInterval);
+        showResult();
+    }
+}
+
+function submitAnswer() {
+    let userAnswer = document.getElementById('answer').value.trim();
+    if (userAnswer === questions[currentLevel][currentQuestionIndex].a) {
+        currentScore++;
+        document.getElementById('feedback').innerText = "Jawaban Benar!";
+        document.getElementById('feedback').style.color = "green";
+        document.getElementById('correctSound').play();
+    } else {
+        document.getElementById('feedback').innerText = "Jawaban Salah!";
+        document.getElementById('feedback').style.color = "red";
+        document.getElementById('wrongSound').play();
+    }
+    currentQuestionIndex++;
+    setTimeout(loadQuestion, 1000);
+}
+
+function showResult() {
+    document.getElementById('quiz').classList.add('hidden');
+    document.getElementById('result').classList.remove('hidden');
+    document.getElementById('score').innerText = currentScore;
+    let message = "";
+    if (currentScore >= 13) {
+        message = "Luar biasa! Kamu jenius! 🎉";
+    } else if (currentScore >= 10) {
+        message = "Bagus! Terus berlatih! 😊";
+    } else if (currentScore >= 5) {
+        message = "Lumayan, yuk tingkatkan lagi! 💪";
+    } else {
+        message = "Jangan menyerah, terus belajar! 😉";
+    }
+    document.getElementById('message').innerText = message;
+}
+
+function resetTimer() {
+    clearInterval(timerInterval);
+    timeLeft = 30;
+    updateTimerBar();
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerBar();
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            submitAnswer();
+        }
+    }, 1000);
+}
+
+function updateTimerBar() {
+    document.getElementById('timerFill').style.width = (timeLeft / 30 * 100) + '%';
+}
+</script>
+
+</body>
+</html>
